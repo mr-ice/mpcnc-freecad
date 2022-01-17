@@ -1,7 +1,6 @@
 MPCNC Pen Holder
 
-This is an adapter for holding a Fisher Space Plotter Pen (from
-https://www.amazon.com/gp/product/B07645YD1M/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1)
+This is an adapter for holding a Fisher Space Plotter Pen (from [1])
 in place of the cutting tool on the MPCNC Lowrider 2.  This fits -my- hole cutout
 (I did not end up using the dust cover from the original design, as I couldn't find the
 dewalt for sale so I ended up buying a different router with it's own dust collection cover.
@@ -10,8 +9,8 @@ This fits into the hole I made for the router using friction, and sits on top of
 on the CNC machine.  It allows the pen to move up and down but not side to side with three
 vertical 150mm steel rods and linear bearings
 
-- 150mm rods - https://www.amazon.com/gp/product/B01NCOMFLT/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
-- linear bearings - https://www.amazon.com/gp/product/B07KR6H3XK/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
+- 150mm rods - [2]
+- linear bearings - [3]
 
 These are the parts in this model
 
@@ -32,3 +31,9 @@ init.py first, then tube.py.
 
 Then paste each additional file into a new document.  This will give you the models in FreeCad
 to tweak or export to stl for your slicer.
+
+[1] https://www.amazon.com/gp/product/B07645YD1M/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
+
+[2] https://www.amazon.com/gp/product/B01NCOMFLT/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
+
+[3] https://www.amazon.com/gp/product/B07KR6H3XK/ref=ppx_yo_dt_b_search_asin_title?ie=UTF8&psc=1
