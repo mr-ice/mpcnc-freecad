@@ -5,11 +5,13 @@ import math
 
 class Config:
     box_width               = 320.0
+    box_top_width           = 313.0
+    box_top_delta           = (box_width - box_top_width) / 2
     box_depth               = 130.0
     card_height             = 91.0
     card_width              = 59.0
     card_thickness          = 12.0   # per 20
-    map_width               = 315
+    map_width               = 312
     map_thickness           = 30     # per 13
     player_length           = 305    # player boards
     player_width            = 150    # player boards
@@ -23,10 +25,10 @@ class Config:
     bitbox_length           = 129    # bitbox length
     bitbox_width            = 68     # bitbox width
     bitbox_height           = 22     # bitbox height
-    clearance               = 2      # card clearance
+    clearance               = 2      # slot clearances
     reboot_thickness        = 4.125  # reboot thickness 33mm / 8
     reboot_width            = 21.5   # reboot width
-    flag_side               = 25.56  # flag side
+    flag_side               = 25.56  # flag side width
     flag_thickness          = 2.2    # flag thickness  13.2 / 6
     flag_x_thickness        = math.sqrt(flag_thickness**2 + flag_thickness**2)    # flag x thickness is offset to have thickness at our 45 deg angle
     flag_height             = 20.05  # flag height
@@ -37,6 +39,8 @@ class Config:
     tolerance               = 0.01
     priority_token_radius   = 38.3 / 2
     priority_token_height   = 3.0
+    general_fillet_radius   = 1
+    top_fillet_radius       = 0.3
 
 test = __name__
 test = "__main__"
@@ -56,10 +60,10 @@ if test == "__main__":
     outer_box_object.Xmax = Config.box_width
     outer_box_object.Ymax = Config.card_width + Config.bottom_thickness + Config.player_thickness * 4
     outer_box_object.Zmax = Config.box_width
-    outer_box_object.X2min = 2.5
-    outer_box_object.Z2min = 2.5
-    outer_box_object.X2max = 315 + 2.5
-    outer_box_object.Z2max = 315 + 2.5
+    outer_box_object.X2min = Config.box_top_delta
+    outer_box_object.Z2min = Config.box_top_delta
+    outer_box_object.X2max = Config.box_top_width + Config.box_top_delta
+    outer_box_object.Z2max = Config.box_top_width + Config.box_top_delta
     outer_box_object.Placement = App.Placement(App.Vector(0, 0, 0), App.Rotation(90, 0, 90))
 
     outer_box = outer_box_object.Shape
@@ -67,8 +71,8 @@ if test == "__main__":
 
     # Create inner box (smaller in all dimensions by wall_thickness * 2, and extra padding on bottom)
     inner_box = Part.makeBox(
-        Config.player_length + Config.clearance * 2,           # width
-        Config.player_length + Config.clearance * 2,           # depth
+        Config.player_length + Config.clearance,           # width
+        Config.player_length + Config.clearance,           # depth
         Config.box_depth - Config.bottom_thickness - Config.card_width  # height
     )
 
@@ -104,7 +108,7 @@ if test == "__main__":
 
     inner_box = inner_box.makeFillet(3, inner_edges)
 
-    wall_thickness = (Config.box_width - (Config.player_length + Config.clearance * 2)) / 2
+    wall_thickness = (Config.box_width - inner_box.BoundBox.XLength) / 2
 
     # Position inner box (centered, raised by bottom padding)
     inner_box.translate(App.Vector(
@@ -383,8 +387,10 @@ if test == "__main__":
     hollow_box = hollow_box.cut(misc_box)
 
 
+ 
 
 
+    ## FILLETS ONLY BELOW HERE, NO MORE CUTS
 
     def is_value(value, target):
         """Check if two values are equal within a small tolerance"""
@@ -408,8 +414,8 @@ if test == "__main__":
             and (are_value(v1.Point.y, v2.Point.y, y_offset + sphere_radius) \
             or are_value(v1.Point.y, v2.Point.y, y_offset + sphere_radius + reboot_slot_thickness)) \
             and (abs(v1.Point.x - v2.Point.x) < 5.0):
-            print(f"Found reboot excluded edge at z={v1.Point.z}: Edge{i + 1}")
-            print(f"  Coordinates: ({v1.Point.x}, {v1.Point.y}) to ({v2.Point.x}, {v2.Point.y})")
+            # print(f"Found reboot excluded edge at z={v1.Point.z}: Edge{i + 1}")
+            # print(f"  Coordinates: ({v1.Point.x}, {v1.Point.y}) to ({v2.Point.x}, {v2.Point.y})")
             return True
         return False
 
@@ -442,9 +448,9 @@ if test == "__main__":
 
     # Fillet edges at these heights
     top_points = (
-        (0, 1.0),
-        (Config.card_width + Config.bottom_thickness + Config.player_thickness * 4, 0.6),
-        (inner_box.Placement.Base.z, 1.0),
+        (0, Config.general_fillet_radius),
+        (Config.card_width + Config.bottom_thickness + Config.player_thickness * 4, Config.top_fillet_radius),
+        (inner_box.Placement.Base.z, Config.general_fillet_radius),
     )
 
     for top_height, fillet_radius in top_points:
@@ -458,10 +464,10 @@ if test == "__main__":
     # some edges are remnants of cut boxes and should not be filleted
     target_z = z_offset + slot_width - slot_width/3  # fillet the top of the card slots
 
-    # These specific coordinates are where the reboot token
-    # edges are, so that we can avoid
-    x_coords = [11.0, 110.0, 203.0, 104.0]
-    y_coords = [309.0, 11.0, 94.0]
+    # These coordinates lie on the edges that need to be excluded from filleting
+    # Define specific coordinates to look for
+    x_coords = [13.0, 106.0, 112.0, 205.0]
+    y_coords = [13.0, 98.0, 307.0]
 
     # Get all edges at the specified Z height
     edges_at_z = []
@@ -498,13 +504,50 @@ if test == "__main__":
             
             if not edge_has_target_coord:
                 edges_index_at_z.append(i + 1)
-                print(f"Found edge at z={v1.Point.z}: Edge{i + 1}")
-                print(f"  Coordinates: ({v1.Point.x}, {v1.Point.y}) to ({v2.Point.x}, {v2.Point.y})")
+                # print(f"Found edge at z={v1.Point.z}: Edge{i + 1}")
+                # print(f"  Coordinates: ({v1.Point.x}, {v1.Point.y}) to ({v2.Point.x}, {v2.Point.y})")
                 edges_at_z.append(edge)
 
     print(f"Found {len(edges_at_z)} edges at z={target_z}")
 
     hollow_box = hollow_box.makeFillet(1, edges_at_z)
+
+
+
+    # Experiment with cutting out the edges after filleting
+       # Add centered cylinder cutout for front/back walls
+    side_cylinder_radius = Config.card_height/2  # Half of card height for radius (larger diameter)
+    box_height = Config.card_width + Config.bottom_thickness + Config.player_thickness * 4
+
+    # Create two shorter cylinders for front and back walls
+    front_cylinder = Part.makeCylinder(
+        side_cylinder_radius,
+        wall_thickness * 12,  # Just enough to cut through front wall
+        App.Vector(0, -wall_thickness * 4, 0),  # Start before front wall
+        App.Vector(0, 1, 0)     # Along Y axis
+    )
+
+    back_cylinder = Part.makeCylinder(
+        side_cylinder_radius,
+        wall_thickness * 12,  # Just enough to cut through back wall
+        App.Vector(0, Config.box_width - wall_thickness * 8, 0),  # Start before back wall
+        App.Vector(0, 1, 0)     # Along Y axis
+    )
+
+    # Position cylinders centered on X and cutting 25mm down from top
+    for i, cylinder in enumerate([front_cylinder, back_cylinder]):
+        cylinder.translate(App.Vector(
+            Config.box_width/2,     # Center X
+            0,
+            box_height + (side_cylinder_radius - 25)  # Position so it cuts 25mm down
+        ))
+        # Add cylinders to document instead of cutting
+        cylinder_shape = doc.addObject("Part::Feature", f"CutoutCylinder_{i+1}")
+        cylinder_shape.ViewObject.hide()
+        cylinder_shape.Shape = cylinder
+        
+        # Comment out the cut operation
+        hollow_box = hollow_box.cut(cylinder)
 
     # Add to document
     box_shape = doc.addObject("Part::Feature", "Box")
@@ -516,4 +559,3 @@ if test == "__main__":
     # Switch to isometric view and fit to window
     Gui.activeDocument().activeView().viewIsometric()
     Gui.SendMsgToActiveView("ViewFit")
-

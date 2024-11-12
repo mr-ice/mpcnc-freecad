@@ -15,8 +15,8 @@ def fpequals(a, b):
     return abs(a - b) < tolerance
 
 # Define specific coordinates to look for
-x_coords = [11.0, 110.0, 203.0, 104.0]
-y_coords = [309.0, 11.0, 94.0]
+x_coords = [13.0, 106.0, 112.0, 205.0]
+y_coords = [13.0, 98.0, 307.0]
 
 
 def get_edges_at_z(shape, target_z):
@@ -58,6 +58,7 @@ def get_edges_at_z(shape, target_z):
                 edges_at_z.append(edge)
 
     return edges_at_z, edges_index_at_z
+
 
 # Clear current selection
 Gui.Selection.clearSelection()
