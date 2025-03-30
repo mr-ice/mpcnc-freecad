@@ -1,0 +1,34 @@
+import os
+import sys
+import importlib
+import FreeCAD
+# Change to the directory containing the terrain generator
+script_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(script_dir)
+
+sys.path.append(script_dir)
+
+# Remove terrain_generator from modules if it was previously imported
+if 'terrain_generator' in sys.modules:
+    del sys.modules['terrain_generator']
+
+
+# Clear the report view
+FreeCAD.Console.PrintMessage("\x1B[2J\x1B[H")
+
+# Import the terrain generator module
+import terrain_generator
+
+# Close any open documents
+for doc in FreeCAD.listDocuments().values():
+    FreeCAD.closeDocument(doc.Name)
+
+# Create new terrain
+doc = terrain_generator.create_water_tile(6,3)
+
+# Set up the view
+Gui.activeDocument().activeView().viewIsometric()
+Gui.SendMsgToActiveView("ViewFit")
+
+# Redraw
+FreeCAD.ActiveDocument.recompute() 
