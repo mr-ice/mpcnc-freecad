@@ -1,0 +1,59 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /Users/michael/3dp/freeCAD/BookBindingTemplates/BookBindingTemplates.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+
+import importlib
+import os
+import sys
+
+import FreeCAD as App
+
+docname = "Templates"
+
+try:
+	import FreeCADGui as Gui
+	_GUI_AVAILABLE = True
+except ImportError:
+	_GUI_AVAILABLE = False
+
+# Change to the directory containing this macro
+macro_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(macro_dir)
+
+if macro_dir not in sys.path:
+	sys.path.insert(0, macro_dir)
+
+# Close any existing document with the same name
+try:
+	App.closeDocument(docname)
+except NameError:
+	pass
+except Exception:
+	pass  # yes, ignore all errors here.
+
+# Create a new document
+App.newDocument(docname)
+
+# Reload local modules to pick up changes
+def _reload_module(module_name):
+	importlib.invalidate_caches()
+
+	if module_name in sys.modules:
+		return importlib.reload(sys.modules[module_name])
+
+	return importlib.import_module(module_name)
+
+sizes = _reload_module("sizes")
+config = _reload_module("config")
+template = _reload_module("template")
+
+# Build the lift assembly
+template.main()
+
+if _GUI_AVAILABLE:
+	Gui.Selection.clearSelection()
+	Gui.activeDocument().activeView().viewIsometric()
+	Gui.SendMsgToActiveView("ViewFit")
+
+# Macro End: /Users/michael/project/TV Table/Lift_Mechanism_Macro.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+
