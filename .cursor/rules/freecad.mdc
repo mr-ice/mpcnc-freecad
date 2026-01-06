@@ -1,0 +1,10 @@
+---
+alwaysApply: true
+---
+
+- Create Python Code for FreeCAD 1.0.2, and ensure not to use FreeCAD for earlier versions that is incompatble.
+- Ensure most constants are put into a config.py within the project, included by the Python.
+- Ensure a .FCMacro file correctly reloads all the Python files and re-creates the FreeCAD document.
+- Always calculate offsets, even if I give you direct offsets calculated or measured within the model.
+- Lint and Formatting should be done by ruff check and ruff format.
+- Keep the document creation in the FCMacro itself, and ensure the macro puts the new document in isometric view and fit all the models to the view.
