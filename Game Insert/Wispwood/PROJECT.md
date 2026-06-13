@@ -47,6 +47,10 @@ Measured from `gepesso/wispwood-tile-holder/*.stl` (binary STL bounding boxes + 
   and edited in one place. The slot cutter is emitted as a hidden `LidSlotCutter` object
   for inspection. The chamfer spans the full groove depth (45°) so the tray's retaining
   lip prints without support.
+- **Friction tuning:** the printed lid slid well but did not stay put, so the **lid only**
+  is widened in X by `LID_WIDTH_FRICTION` (0.4 mm total, 0.2 mm/side) — the slot is left
+  unchanged, dropping the side clearance from 0.3 → 0.1 mm/side for a tighter friction grip
+  while keeping the (good) vertical fit. Tune `LID_WIDTH_FRICTION` against the next print.
 
 ### Finger scoops
 - On **both short ends** (front and back walls), one per pocket, **~80% of the pocket
@@ -67,6 +71,9 @@ Measured from `gepesso/wispwood-tile-holder/*.stl` (binary STL bounding boxes + 
     `STAND_V_ANGLE_DEG`. The jog + short arm form the lock detent.
 - Slot position **derived from the leg** (margins stay equal). Modelled **folded** —
   kinematics still to be tuned against a print.
+- **Anti-fuse gap:** each leg's inner face is offset from the tray's outer wall by
+  `STAND_BODY_GAP` (0.2 mm) so the folded-modelled legs do not print fused to the tray
+  body; the oval pegs are lengthened to bridge the gap and still seat fully in the slot.
 
 ### Finger-scoop chamfers
 - The scoops' **outer-face and top edges** are chamfered (`SCOOP_CHAMFER`) for finger
@@ -88,6 +95,12 @@ Measured from `gepesso/wispwood-tile-holder/*.stl` (binary STL bounding boxes + 
 - Dispensing clearances: `DISPENSE_GAP`, `LID_SLIDE_CLEARANCE`, `GATE_FLOOR_GAP`,
   `STAND_HINGE_CLEARANCE` — empirical, tune after a test print.
 
+## Print-tuning log
+
+- **Print 1:** lid slid freely but would not hold position; legs printed fused to the tray
+  body. **Fixes:** `LID_WIDTH_FRICTION = 0.4` (tighter lid friction, slot unchanged) and
+  `STAND_BODY_GAP = 0.2` (leg-to-wall clearance). Re-print to confirm both.
+
 ## Build status
 
 - [x] Reverse-engineer reference dimensions
@@ -95,3 +108,5 @@ Measured from `gepesso/wispwood-tile-holder/*.stl` (binary STL bounding boxes + 
 - [x] Core parametric tray (pockets, walls, divider, lid rails) — `.FCMacro` + Python
 - [x] Two-part sliding/dispensing lid + short-end finger scoops
 - [x] Folding stand: V-slot + oval-peg legs + base bar (folded; kinematics need tuning)
+- [x] Print 1 fit fixes: lid friction width + leg anti-fuse gap (config-driven)
+- [ ] Re-print to confirm lid holds position and legs separate cleanly
