@@ -1,0 +1,56 @@
+"""FreeCAD Macro to create Basket Insert for Dim Sum Organizer.
+
+This macro reloads all Python files and creates the FreeCAD document.
+"""
+
+import FreeCAD
+import importlib
+import sys
+import os
+
+# Get the macro directory
+macro_dir = os.path.dirname(__file__)
+
+# Add to path if not already there
+if macro_dir not in sys.path:
+    sys.path.insert(0, macro_dir)
+
+# Reload modules
+try:
+    if "config" in sys.modules:
+        importlib.reload(sys.modules["config"])
+    if "create_basket_insert" in sys.modules:
+        importlib.reload(sys.modules["create_basket_insert"])
+except KeyError:
+    pass
+
+# Import modules
+import create_basket_insert
+
+# Close existing document if it exists
+if FreeCAD.ActiveDocument:
+    FreeCAD.closeDocument(FreeCAD.ActiveDocument.Name)
+
+# Create new document
+doc = FreeCAD.newDocument("BasketInsert")
+
+# Create the insert
+create_basket_insert.create_basket_insert(doc)
+
+# Recompute
+doc.recompute()
+
+# Set to isometric view and fit all
+if FreeCAD.GuiUp:
+    import FreeCADGui
+
+    # Get the active view
+    view = FreeCADGui.activeDocument().activeView()
+
+    # Set to isometric view
+    view.viewIsometric()
+
+    # Fit all objects to view
+    view.fitAll()
+
+FreeCAD.Console.PrintMessage("Basket insert created successfully!\n")
