@@ -1,0 +1,29 @@
+[project]
+name = "freecad"
+version = "0.1.0"
+description = ""
+authors = [{ name = "Michael Rice", email = "michael@riceclan.org" }]
+requires-python = ">=3.9"
+dependencies = [
+    "openpyscad>=0.5.0,<0.6.0",
+    "inquirerpy>=0.3.4,<0.4.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=5.2,<6.0",
+]
+
+[tool.uv]
+# This repo is a collection of FreeCAD/CAD scripts, not an installable package, so uv
+# only manages the environment and dependencies (it does not build/install the project).
+package = false
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "N", "D", "UP"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"

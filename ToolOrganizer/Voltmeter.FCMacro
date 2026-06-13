@@ -1,0 +1,62 @@
+# -*- coding: utf-8 -*-
+"""
+FreeCAD Macro: Voltmeter
+Reloads Python modules and recreates the voltmeter model
+"""
+
+import FreeCAD
+import sys
+import os
+
+# Get the macro directory
+macro_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Add the macro directory to Python path if not already there
+if macro_dir not in sys.path:
+    sys.path.insert(0, macro_dir)
+
+# Reload modules to pick up changes
+if 'voltmeter_config' in sys.modules:
+    import importlib
+    importlib.reload(sys.modules['voltmeter_config'])
+if 'voltmeter' in sys.modules:
+    import importlib
+    importlib.reload(sys.modules['voltmeter'])
+
+# Import the modules
+import voltmeter_config
+import voltmeter
+
+# Close existing document with same name if it exists
+doc_name = "Voltmeter"
+for doc in FreeCAD.listDocuments().values():
+    if doc.Name == doc_name:
+        FreeCAD.closeDocument(doc.Name)
+        break
+
+# Create new document
+doc = FreeCAD.newDocument(doc_name)
+
+# Set as active document
+FreeCAD.setActiveDocument(doc.Name)
+
+# Build the model (creates both Voltmeter and VoltmeterHole objects)
+voltmeter.build_model(doc)
+
+# Recompute document
+doc.recompute()
+
+# Set view to isometric and fit
+if FreeCAD.Gui:
+    try:
+        view = FreeCAD.Gui.ActiveDocument.ActiveView
+        # Set to isometric view (1, 1, 1 direction)
+        view.viewIsometric()
+        # Fit all objects in view
+        FreeCAD.Gui.SendMsgToActiveView("ViewFit")
+    except Exception as e:
+        print(f"Warning: Could not set view: {e}")
+
+print("Voltmeter model created successfully!")
+print("Objects created: 'Voltmeter' (normal) and 'VoltmeterHole' (with tolerance)")
+

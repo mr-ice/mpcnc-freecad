@@ -1,0 +1,43 @@
+# -*- coding: utf-8 -*-
+"""
+FreeCAD Macro: TXHH Organizer Bins
+Closes existing document, opens new one, reloads modules, creates bin objects.
+"""
+
+import FreeCAD
+import sys
+import os
+
+macro_dir = os.path.dirname(os.path.abspath(__file__))
+if macro_dir not in sys.path:
+    sys.path.insert(0, macro_dir)
+
+modules_to_reload = ["configtxhh", "txhh_organizer"]
+for mod_name in modules_to_reload:
+    if mod_name in sys.modules:
+        import importlib
+        importlib.reload(sys.modules[mod_name])
+
+import configtxhh
+import txhh_organizer
+
+doc_name = "TXHHOrganizer"
+for doc in FreeCAD.listDocuments().values():
+    if doc.Name == doc_name:
+        FreeCAD.closeDocument(doc.Name)
+        break
+
+doc = FreeCAD.newDocument(doc_name)
+FreeCAD.setActiveDocument(doc.Name)
+
+txhh_organizer.build_model(doc)
+
+if FreeCAD.Gui:
+    try:
+        view = FreeCAD.Gui.ActiveDocument.ActiveView
+        view.viewIsometric()
+        FreeCAD.Gui.SendMsgToActiveView("ViewFit")
+    except Exception as e:
+        print(f"Warning: Could not set view: {e}")
+
+print("TXHH Organizer bins created successfully!")

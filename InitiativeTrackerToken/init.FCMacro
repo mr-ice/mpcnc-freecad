@@ -1,0 +1,41 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /Users/michael/3dp/freeCAD/InitiativeTrackerToken/init.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+
+import FreeCADGui as Gui
+import FreeCAD as App
+import os
+import sys
+from importlib import reload
+
+# Change to the directory containing this macro
+macro_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(macro_dir)
+
+if '' not in sys.path:
+	sys.path.insert(0, '')
+
+# Close the document if it is already open
+try:
+	App.closeDocument('initiativeToken')
+except NameError:
+	pass
+	
+# Create a new document
+App.newDocument('initiativeToken')
+
+
+if 'initiativeToken' not in sys.modules:
+    import initiativeToken
+
+# reload(initiativeToken.params)
+reload(initiativeToken)
+
+# Create the adapter
+initiativeToken.create_token()
+initiativeToken.create_text()
+
+Gui.activeDocument().activeView().viewIsometric()
+Gui.SendMsgToActiveView("ViewFit")
+
+# Macro End: /Users/michael/3dp/freeCAD/InitiativeTrackerToken/init.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++

@@ -1,0 +1,75 @@
+# -*- coding: utf-8 -*-
+"""
+FreeCAD Macro: Tool Organizer
+Reloads Python modules and recreates the tool organizer and voltmeter models
+"""
+
+import FreeCAD
+import sys
+import os
+
+# Get the macro directory
+macro_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Add the macro directory to Python path if not already there
+if macro_dir not in sys.path:
+    sys.path.insert(0, macro_dir)
+
+# Reload modules to pick up changes
+modules_to_reload = [
+    'config', 'tool_organizer', 'voltmeter_config', 'voltmeter'
+]
+for mod_name in modules_to_reload:
+    if mod_name in sys.modules:
+        import importlib
+        importlib.reload(sys.modules[mod_name])
+
+# Import the modules
+import config
+import tool_organizer
+import voltmeter_config
+import voltmeter
+
+# Close existing document with same name if it exists
+doc_name = "ToolOrganizer"
+for doc in FreeCAD.listDocuments().values():
+    if doc.Name == doc_name:
+        FreeCAD.closeDocument(doc.Name)
+        break
+
+# Create new document
+doc = FreeCAD.newDocument(doc_name)
+
+# Set as active document
+FreeCAD.setActiveDocument(doc.Name)
+
+# Build the voltmeter hole model first (needed for organizer subtraction)
+wall_thickness = config.OUTER_WALL_THICKNESS
+voltmeter_hole_obj = voltmeter.build_hole_model(
+    doc,
+    offset_x=wall_thickness,
+    offset_y=-wall_thickness - (2* voltmeter_config.DEFAULT_TOLERANCE),
+    offset_z=wall_thickness
+)
+
+# Build the tool organizer model and subtract the voltmeter hole
+tool_organizer.build_model(doc, voltmeter_hole_obj=voltmeter_hole_obj)
+
+# Recompute document
+doc.recompute()
+
+# Set view to isometric and fit
+if FreeCAD.Gui:
+    try:
+        view = FreeCAD.Gui.ActiveDocument.ActiveView
+        # Set to isometric view (1, 1, 1 direction)
+        view.viewIsometric()
+        # Fit all objects in view
+        FreeCAD.Gui.SendMsgToActiveView("ViewFit")
+    except Exception as e:
+        print(f"Warning: Could not set view: {e}")
+
+
+print("Tool Organizer and Voltmeter models created successfully!")
+print("Objects created: 'ToolOrganizer', 'VoltmeterHole'")
+

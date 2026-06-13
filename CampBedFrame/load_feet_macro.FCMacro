@@ -1,0 +1,19 @@
+import os
+from importlib import reload
+import sys
+
+sys.path.insert(0, '')
+
+# Change to the directory containing the feet.py file
+# Replace this path with your actual path
+script_dir = "/Users/michael/3dp/freeCAD/CampBedFrame/"
+os.chdir(script_dir)
+
+# Try to reload the module if it's already loaded, otherwise import it
+try:
+    import feet
+    reload(feet)
+except ImportError:
+    import feet
+
+print("Feet module loaded/reloaded successfully") 

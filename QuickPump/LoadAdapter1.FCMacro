@@ -1,0 +1,39 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /Users/michael/3dp/QuickPump/LoadAdapter1.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+
+import FreeCADGui as Gui
+import FreeCAD as App
+import os
+import sys
+from importlib import reload
+
+# Change to the directory containing this macro
+macro_dir = os.path.dirname(os.path.realpath(__file__))
+os.chdir(macro_dir)
+
+if '' not in sys.path:
+	sys.path.insert(0, '')
+
+# Close the document if it is already open
+try:
+	App.closeDocument('Adapter1')
+except NameError:
+	pass
+	
+# Create a new document
+App.newDocument('Adapter1')
+
+
+import Adapter1
+
+reload(Adapter1.params)
+reload(Adapter1)
+
+# Create the adapter
+Adapter1.create_adapter()
+
+Gui.activeDocument().activeView().viewIsometric()
+Gui.SendMsgToActiveView("ViewFit")
+
+# Macro End: /Users/michael/3dp/QuickPump/LoadAdapter1.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++

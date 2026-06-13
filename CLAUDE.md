@@ -50,3 +50,5 @@ together with this file. Add new projects to this list as they gain a `PROJECT.m
   holds stacks of circular and oval game tokens.
 - [ToolOrganizer](ToolOrganizer/PROJECT.md) — drawer organizer bin inserts with locking
   clips and labels.
+- [Game Insert/Wispwood](Game%20Insert/Wispwood/PROJECT.md) — two-stack Wispwood tile rack
+  with a two-part sliding/dispensing lid and an integrated folding stand.
