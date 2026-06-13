@@ -61,3 +61,10 @@ slot_length = 9.0  # mm length of slot
 pin_hole_tolerance = 0.2  ## mm
 
 max_printer_dimension = 345  # mm
+
+"""Configuration elements for the terrain generator"""
+
+class Config:
+    square_size = 1.25 * 25.4 # 1.25 inches in mm
+
+config = Config()

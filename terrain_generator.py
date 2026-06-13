@@ -1,10 +1,97 @@
 import FreeCAD as App
 import Part
 import random
+import datetime
 from FreeCAD import Base
 import math
+from config import config
 
-def create_water_tile(width_squares=2, length_squares=2, square_size_inch=1.25, thickness_mm=2.25, wave_amplitude=0.5):
+
+def create_channel_cutter(length=2 * config.square_size, thickness_mm=2.75, width=1.2, radius=0.6):
+    """
+    Create a channel cutter profile.
+    
+    The channels are to outline the edges of the tile, and round off the top edge.
+    """
+
+    vert_height_offset = 0.05 + 0.4
+    vert_height = thickness_mm - radius - vert_height_offset
+    radii_height = thickness_mm - vert_height_offset
+
+    # Create profile edges
+    # Bottom edge
+    bottom = Part.makeLine(
+        Base.Vector(0, -width/2, 0),  # Bottom left
+        Base.Vector(0, width/2, 0)    # Bottom right
+    )
+
+    
+    # Right vertical side
+    right_vert = Part.makeLine(
+        Base.Vector(0, width/2, 0),              # Bottom right
+        Base.Vector(0, width/2, vert_height)     # Top of vertical right
+    )
+
+    
+    # Right arc (from vertical to horizontal)
+    right_arc = Part.makeCircle(
+        radius,                                          # Radius
+        Base.Vector(0, width/2 + radius, radii_height),  # Center point moved out by radius
+        Base.Vector(1, 0, 0),                            # Normal along X axis
+        90, 180                                          # Arc angles
+    )
+    right_arc.translate(Base.Vector(0, 0, -radius))
+    
+    # Top Vertical Line
+    top_vert_right = Part.makeLine(
+        Base.Vector(0, width/2 + radius, thickness_mm + radius),  # Right end
+        Base.Vector(0, width/2 + radius, vert_height + radius)     # Top of vertical right
+    )
+    # Top horizontal line
+    top = Part.makeLine(
+        Base.Vector(0, width/2 + radius, thickness_mm + radius),  # Right end
+        Base.Vector(0, -width/2 - radius, thickness_mm + radius)  # Left end
+    )
+
+    # Top vertical line
+    top_vert_left = Part.makeLine(
+        Base.Vector(0, -width/2 - radius, thickness_mm + radius),  # Left end
+        Base.Vector(0, -width/2 - radius, vert_height + radius)     # Top of vertical left
+    )
+
+    # Left arc (from horizontal to vertical)
+    left_arc = Part.makeCircle(
+        radius,                                          # Radius
+        Base.Vector(0, -width/2 - radius, radii_height), # Center point moved out by radius
+        Base.Vector(1, 0, 0),                            # Normal along X axis
+        0, 90                                            # Arc angles
+    )
+    left_arc.translate(Base.Vector(0, 0, -radius))
+
+    
+    # Left vertical side
+    left_vert = Part.makeLine(
+        Base.Vector(0, -width/2, vert_height),  # Top of vertical left
+        Base.Vector(0, -width/2, 0)             # Back to start
+    )
+
+    
+    # Create the complete wire for reference
+    edges = [bottom, right_vert, right_arc, top_vert_right, top, top_vert_left, left_arc, left_vert]
+    wire = Part.Wire(edges)
+    # wire_obj = App.ActiveDocument.addObject("Part::Feature", "wire")
+    # wire_obj.Shape = wire
+    
+    # Create a face from the wire
+    face = Part.Face(wire)
+    
+    # Create the solid by extruding the face
+    solid = face.extrude(Base.Vector(length, 0, 0))  # Extrude along X axis
+    
+    return solid
+
+
+def create_water_tile(width_squares=2, length_squares=2, thickness_mm=2.25, wave_amplitude=0.5):
     """
     Create a water terrain tile with specified dimensions
     
@@ -17,9 +104,8 @@ def create_water_tile(width_squares=2, length_squares=2, square_size_inch=1.25, 
     """
     
     # Convert inches to mm
-    square_size_mm = square_size_inch * 25.4
-    total_width = width_squares * square_size_mm
-    total_length = length_squares * square_size_mm
+    total_width = width_squares * config.square_size
+    total_length = length_squares * config.square_size
     
     # Create base document
     doc = App.newDocument()
@@ -41,7 +127,7 @@ def create_water_tile(width_squares=2, length_squares=2, square_size_inch=1.25, 
             y = j * dy
             
             # Create more irregular water pattern
-            random.seed(i * 73 + j * 31)  # Prime numbers for less regular patterns
+            random.seed(i * 73 + j * 31 + datetime.datetime.now().microsecond)  # Prime numbers for less regular patterns
             z = thickness_mm + wave_amplitude * (
                 math.sin(x * 0.3 + y * 0.2) * 0.3 +  # Base wave
                 math.sin(x * 0.7 - y * 0.4) * 0.2 +  # Cross wave
@@ -109,75 +195,26 @@ def create_water_tile(width_squares=2, length_squares=2, square_size_inch=1.25, 
         
         # Create cutting lines for squares with rounded edges
         cuts = []
-        for i in range(1, width_squares):
-            # Create box for the main cut
-            center_x = i * square_size_mm
-            box = Part.makeBox(1.2, total_length, thickness_mm * 2,
-                             Base.Vector(center_x - 0.6, 0, 0.4))
-            
-            # Create cylinders for the rounded edges
-            radius = 0.6
-            cyl1 = Part.makeCylinder(radius, total_length, 
-                                   Base.Vector(center_x - 0.6, 0, 0.4 + radius), 
-                                   Base.Vector(0, 1, 0))
-            cyl2 = Part.makeCylinder(radius, total_length, 
-                                   Base.Vector(center_x + 0.6, 0, 0.4 + radius), 
-                                   Base.Vector(0, 1, 0))
-            
-            # Combine shapes
-            cut_shape = box.fuse([cyl1, cyl2])
-            cuts.append(cut_shape)
+        for x in range(length_squares+1):
+            cutter = create_channel_cutter(total_width + 0.4, thickness_mm, 1.2)
+            cutter.translate(Base.Vector(-0.2, x * config.square_size, 0.6))
+            cuts.append(cutter)
+            cutterObj = doc.addObject("Part::Feature", "ChannelCutter")
+            cutterObj.Shape = cutter
+
+        for y in range(width_squares+1):
+            cutter = create_channel_cutter(total_length + 0.4, thickness_mm, 1.2)
+            cutter.rotate(Base.Vector(0, 0, 0), Base.Vector(0, 0, 1), 90)
+            cutter.translate(Base.Vector(y * config.square_size, -0.2, 0.6))  # three layers at 0.2mm
+            cuts.append(cutter)
+            cutterObj = doc.addObject("Part::Feature", "ChannelCutter")
+            cutterObj.Shape = cutter
         
-        for i in range(1, length_squares):
-            # Create box for the main cut
-            center_y = i * square_size_mm
-            box = Part.makeBox(total_width, 1.2, thickness_mm * 2,
-                             Base.Vector(0, center_y - 0.6, 0.4))
-            
-            # Create cylinders for the rounded edges
-            radius = 0.6
-            cyl1 = Part.makeCylinder(radius, total_width, 
-                                   Base.Vector(0, center_y - 0.6, 0.4 + radius), 
-                                   Base.Vector(1, 0, 0))
-            cyl2 = Part.makeCylinder(radius, total_width, 
-                                   Base.Vector(0, center_y + 0.6, 0.4 + radius), 
-                                   Base.Vector(1, 0, 0))
-            
-            # Combine shapes
-            cut_shape = box.fuse([cyl1, cyl2])
-            cuts.append(cut_shape)
-        
-        # Create rounded edges for the outer perimeter
-        edge_radius = 1.0
-        perimeter_cuts = []
-        
-        # Top edge cylinder
-        top_cyl = Part.makeCylinder(edge_radius, total_width,
-                                  Base.Vector(0, total_length + edge_radius, edge_radius),
-                                  Base.Vector(1, 0, 0))
-        perimeter_cuts.append(top_cyl)
-        
-        # Bottom edge cylinder
-        bottom_cyl = Part.makeCylinder(edge_radius, total_width,
-                                    Base.Vector(0, -edge_radius, edge_radius),
-                                    Base.Vector(1, 0, 0))
-        perimeter_cuts.append(bottom_cyl)
-        
-        # Left edge cylinder
-        left_cyl = Part.makeCylinder(edge_radius, total_length,
-                                   Base.Vector(-edge_radius, 0, edge_radius),
-                                   Base.Vector(0, 1, 0))
-        perimeter_cuts.append(left_cyl)
-        
-        # Right edge cylinder
-        right_cyl = Part.makeCylinder(edge_radius, total_length,
-                                    Base.Vector(total_width + edge_radius, 0, edge_radius),
-                                    Base.Vector(0, 1, 0))
-        perimeter_cuts.append(right_cyl)
-        
+
         # Create final shape by cutting the solid
-        final_shape = water_solid.cut(cuts)
-        final_shape = final_shape.cut(perimeter_cuts)
+        final_shape = water_solid
+        for cut in cuts:
+            final_shape = final_shape.cut(cut)
         
         # Create FreeCAD object
         terrain = doc.addObject("Part::Feature", "WaterTerrain")
