@@ -6,6 +6,7 @@ import os
 import sys
 from importlib import reload
 
+
 # Change to the directory containing this macro
 macro_dir = os.path.dirname(os.path.realpath(__file__))
 os.chdir(macro_dir)
@@ -19,9 +20,9 @@ except NameError:
     pass
     
 if 'GateLatch' not in sys.modules:
-    import dog_gate_latch
-reload(dog_gate_latch)
-dog_gate_latch.main()
+    import latch
+reload(latch)
+latch.main()
 
 #Gui.activeDocument().activeView().viewTop()
 Gui.activeDocument().activeView().viewIsometric()
