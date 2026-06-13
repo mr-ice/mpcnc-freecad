@@ -5,7 +5,6 @@ import FreeCADGui as Gui
 from Draft import make_polar_array
 from PenHolderConfig import *
 
-
 doc = App.ActiveDocument
 
 # Tube butt up against the slider base
@@ -20,8 +19,8 @@ w1.Length = pen_diameter
 w1.Width = base_thickness
 
 # offset these by half the thickness of the slider wings
-w1.Placement.Base.y = upright_hole/2/2 + tolerance
-w1.Placement.Base.x = (nickel_diameter + 4)/2 - 1
+w1.Placement.Base.y = upright_hole / 2 / 2 + tolerance
+w1.Placement.Base.x = (nickel_diameter + 4) / 2 - 1
 
 w2 = doc.addObject("Part::Box", "Wing1")
 w2.Height = base_thickness * 4
@@ -29,17 +28,17 @@ w2.Length = pen_diameter
 w2.Width = base_thickness
 
 # offset these by half the thickness of the slider wings
-w2.Placement.Base.y = -upright_hole/2/2 - tolerance - base_thickness
-w2.Placement.Base.x = (nickel_diameter + 4)/2 - 1
+w2.Placement.Base.y = -upright_hole / 2 / 2 - tolerance - base_thickness
+w2.Placement.Base.x = (nickel_diameter + 4) / 2 - 1
 
 wingb = doc.addObject("Part::Fuse", "WingBase")
 wingb.Base = w1
 wingb.Tool = w2
 
 cutter = doc.addObject("Part::Cylinder", "WingCutter")
-cutter.Radius = (nickel_diameter + 4)/2 + tolerance
+cutter.Radius = (nickel_diameter + 4) / 2 + tolerance
 cutter.Height = w2.Height + 2
-cutter.Placement.Base.z = -1 
+cutter.Placement.Base.z = -1
 
 wings = doc.addObject("Part::Cut", "Wings")
 wings.Base = wingb

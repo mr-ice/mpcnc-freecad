@@ -43,20 +43,17 @@ repository rules.
 
 import math
 
+import config as cfg
 import FreeCAD as App  # noqa: F401  (imported for parity with the macro environment)
 import Part
 from FreeCAD import Vector
-
-import config as cfg
 
 # --- Derived outer envelope --------------------------------------------------
 OUTER_WIDTH = 2 * cfg.WALL_LONG + 2 * cfg.POCKET_WIDTH + cfg.DIVIDER_THICKNESS
 RAIL_Z0 = cfg.FLOOR_THICKNESS + cfg.POCKET_DEPTH  # lid underside (lid rests here)
 LID_Z0 = RAIL_Z0
 LID_Z1 = LID_Z0 + cfg.LID_THICKNESS
-WALL_TOP = (
-    LID_Z1 + cfg.LID_SLIDE_CLEARANCE + cfg.LID_TOP_LIP
-)  # outer (long) wall height
+WALL_TOP = LID_Z1 + cfg.LID_SLIDE_CLEARANCE + cfg.LID_TOP_LIP  # outer (long) wall height
 POCKET_Y0 = cfg.WALL_END  # front wall occupies Y[0..WALL_END]
 POCKET_Y1 = POCKET_Y0 + cfg.POCKET_LENGTH  # inner face of the back wall
 OUTER_LENGTH = cfg.POCKET_LENGTH + 2 * cfg.WALL_END
@@ -208,9 +205,7 @@ def _finger_scoop(cx, wall_y0):
     y0 = wall_y0 - 1.0
     ylen = cfg.WALL_END + 2.0
     slot = _box(cx - r, y0, centre_z, 2.0 * r, ylen, (WALL_TOP + 1.0) - centre_z)
-    round_bottom = Part.makeCylinder(
-        r, ylen, Vector(cx, y0, centre_z), Vector(0.0, 1.0, 0.0)
-    )
+    round_bottom = Part.makeCylinder(r, ylen, Vector(cx, y0, centre_z), Vector(0.0, 1.0, 0.0))
     return slot.fuse(round_bottom)
 
 
@@ -236,9 +231,7 @@ def _chamfer_scoop_edges(tray):
         if not near_scoop_x(bb):
             continue
         at_top = abs(bb.ZMin - top_z) < tol and abs(bb.ZMax - top_z) < tol
-        at_outer = any(
-            abs(bb.YMin - y) < tol and abs(bb.YMax - y) < tol for y in outer_ys
-        )
+        at_outer = any(abs(bb.YMin - y) < tol and abs(bb.YMax - y) < tol for y in outer_ys)
         if at_top or at_outer:
             selected.append(e)
     if not selected:
@@ -262,14 +255,10 @@ def build_tray():
 
     floor = _box(0, 0, 0, OUTER_WIDTH, OUTER_LENGTH, cfg.FLOOR_THICKNESS)
     left_wall = _box(0, 0, cfg.FLOOR_THICKNESS, cfg.WALL_LONG, OUTER_LENGTH, wall_h)
-    right_wall = _box(
-        INNER_X1, 0, cfg.FLOOR_THICKNESS, cfg.WALL_LONG, OUTER_LENGTH, wall_h
-    )
+    right_wall = _box(INNER_X1, 0, cfg.FLOOR_THICKNESS, cfg.WALL_LONG, OUTER_LENGTH, wall_h)
     # Front and back end walls are identical, both rising to the lid underside so the
     # lid can slide out either end (held by rail friction).
-    front_wall = _box(
-        INNER_X0, 0, cfg.FLOOR_THICKNESS, inner_w, cfg.WALL_END, cfg.END_WALL_HEIGHT
-    )
+    front_wall = _box(INNER_X0, 0, cfg.FLOOR_THICKNESS, inner_w, cfg.WALL_END, cfg.END_WALL_HEIGHT)
     back_wall = _box(
         INNER_X0,
         POCKET_Y1,
@@ -288,13 +277,7 @@ def build_tray():
         RAIL_Z0 - cfg.FLOOR_THICKNESS,
     )
 
-    tray = (
-        floor.fuse(left_wall)
-        .fuse(right_wall)
-        .fuse(front_wall)
-        .fuse(back_wall)
-        .fuse(divider)
-    )
+    tray = floor.fuse(left_wall).fuse(right_wall).fuse(front_wall).fuse(back_wall).fuse(divider)
 
     # Lid slot: the lid grown by the fit tolerance, cut once from the tray. This forms the
     # beveled side rails and gives the lid clearance over the end walls and divider.
@@ -309,9 +292,7 @@ def build_tray():
     # Blind V-slots for the folding stand, in the outer face of each long wall.
     slot_depth = cfg.STAND_PEG_DEPTH + cfg.STAND_SLOT_CLEARANCE
     tray = tray.cut(_stand_slot_cutter(0.0, slot_depth))  # left wall (outer face x=0)
-    tray = tray.cut(
-        _stand_slot_cutter(OUTER_WIDTH - slot_depth, slot_depth)
-    )  # right wall
+    tray = tray.cut(_stand_slot_cutter(OUTER_WIDTH - slot_depth, slot_depth))  # right wall
 
     return tray
 
@@ -434,9 +415,7 @@ def _stand_slot_cutter(x0, depth):
     # Extend the horizontal arm past the folded rest (toward the back) so the oval is
     # fully captured at rest.
     folded_end = (STAND_FOLDED[0] + peg_half, STAND_FOLDED[1])
-    arm1 = _channel(
-        STAND_VERTEX, folded_end, width, x0, depth
-    )  # horizontal "parallel" arm
+    arm1 = _channel(STAND_VERTEX, folded_end, width, x0, depth)  # horizontal "parallel" arm
     jog = _channel(STAND_VERTEX, STAND_JOG_TOP, width, x0, depth)  # short vertical lift
     arm2 = _channel(STAND_JOG_TOP, STAND_LOCK, width, x0, depth)  # short tilted top arm
     return arm1.fuse(jog).fuse(arm2)
@@ -484,13 +463,9 @@ def build_stand():
     gussets = _leg_base_gussets(-t).fuse(_leg_base_gussets(OUTER_WIDTH))
     # Pegs project inward from each leg into the wall slot.
     left_peg = _oval_peg(yf, zf, 0.0, cfg.STAND_PEG_DEPTH)
-    right_peg = _oval_peg(
-        yf, zf, OUTER_WIDTH - cfg.STAND_PEG_DEPTH, cfg.STAND_PEG_DEPTH
-    )
+    right_peg = _oval_peg(yf, zf, OUTER_WIDTH - cfg.STAND_PEG_DEPTH, cfg.STAND_PEG_DEPTH)
 
-    return (
-        left_leg.fuse(right_leg).fuse(base).fuse(gussets).fuse(left_peg).fuse(right_peg)
-    )
+    return left_leg.fuse(right_leg).fuse(base).fuse(gussets).fuse(left_peg).fuse(right_peg)
 
 
 def build_all():

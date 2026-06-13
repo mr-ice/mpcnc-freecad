@@ -23,9 +23,7 @@ TILE_DEPTH_CLEARANCE = 1.0  # extra pocket depth above the tile height
 
 # --- Pockets (derived) -------------------------------------------------------
 POCKET_WIDTH = TILE_SIZE + 2 * TILE_SIDE_CLEARANCE  # -> 38.0 (matches SOURCE)
-POCKET_LENGTH = (
-    TILES_PER_STACK * TILE_THICKNESS + STACK_LENGTH_SLACK
-)  # ASSUMED tile_thk
+POCKET_LENGTH = TILES_PER_STACK * TILE_THICKNESS + STACK_LENGTH_SLACK  # ASSUMED tile_thk
 POCKET_DEPTH = TILE_SIZE + TILE_DEPTH_CLEARANCE  # ~37; SOURCE interior depth ~39
 
 # --- Walls / structure -------------------------------------------------------
@@ -36,9 +34,7 @@ DIVIDER_THICKNESS = 2.0  # SOURCE: centre divider between the two pockets
 
 # --- Lid ---------------------------------------------------------------------
 LID_THICKNESS = 2.0  # SOURCE
-LID_SPLIT_TILE = (
-    65  # large lid covers tiles 1..LID_SPLIT_TILE; small lid covers the rest
-)
+LID_SPLIT_TILE = 65  # large lid covers tiles 1..LID_SPLIT_TILE; small lid covers the rest
 DISPENSE_GAP = TILE_THICKNESS + 0.6  # how far the lid slides back to release one tile
 RAIL_DEPTH = 1.5  # how far the lid edge sits into the side rail groove
 # The lid cross-section is defined once (in wispwood.py); the tray slot is that same
@@ -46,12 +42,8 @@ RAIL_DEPTH = 1.5  # how far the lid edge sits into the side rail groove
 # defined in one place. LID_BEVEL spans the full groove depth (45 deg), making the tray's
 # retaining lip a clean 45 deg overhang that prints without support. The lid's outer tip
 # is then LID_THICKNESS - LID_BEVEL thick (~0.5 mm) -- raise LID_THICKNESS if too fragile.
-LID_BEVEL = (
-    RAIL_DEPTH  # 45 deg chamfer on the lid's top sliding edges (== groove depth)
-)
-LID_SLIDE_CLEARANCE = (
-    0.3  # tolerance grown around the lid to cut the tray slot (the fit)
-)
+LID_BEVEL = RAIL_DEPTH  # 45 deg chamfer on the lid's top sliding edges (== groove depth)
+LID_SLIDE_CLEARANCE = 0.3  # tolerance grown around the lid to cut the tray slot (the fit)
 LID_TOP_LIP = 1.0  # wall lip above the lid that retains it from lifting
 
 # End walls (front and back) are identical: both rise to the lid underside (full pocket
@@ -88,9 +80,7 @@ STAND_SLOT_CLEARANCE = 0.4  # slot-vs-peg running clearance
 STAND_SLOT_ARM_LEN = 24.0  # length of the horizontal (parallel) arm
 STAND_V_ANGLE_DEG = 20.0  # tilt of the top arm above horizontal
 STAND_JOG_FRAC = 0.5  # vertical jog at the vertex = this * peg width (the lift)
-STAND_ARM2_FRAC = (
-    1.5  # top (lock) arm length = this * peg length (significantly shorter)
-)
+STAND_ARM2_FRAC = 1.5  # top (lock) arm length = this * peg length (significantly shorter)
 
 # --- Tolerances / print ------------------------------------------------------
 GENERAL_CLEARANCE = 0.2  # default fit clearance for mating printed parts

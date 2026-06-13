@@ -1,8 +1,8 @@
 """Create the Dim Sum Organizer insert geometry."""
 
+import config
 import FreeCAD
 import Part
-import config
 
 
 def create_container_cylinder():
@@ -134,8 +134,6 @@ def create_insert(doc):
     circle_offset = config.CONTAINER_RADIUS - config.CIRCLE_TOKEN_RADIUS
     circle_token.translate(FreeCAD.Vector(circle_offset, 0, circle_offset))
 
-
-
     # Calculate positions for oval tokens
     FreeCAD.Console.PrintMessage("Calculating oval token positions...\n")
     oval_positions = calculate_oval_positions()
@@ -156,9 +154,7 @@ def create_insert(doc):
             FreeCAD.Console.PrintError(f"Oval token {i+1} shape is null!\n")
             raise ValueError(f"Oval token shape is null at position {pos}")
 
-        FreeCAD.Console.PrintMessage(
-            f"Oval token {i+1} created. IsNull: {oval_shape.isNull()}\n"
-        )
+        FreeCAD.Console.PrintMessage(f"Oval token {i+1} created. IsNull: {oval_shape.isNull()}\n")
 
         # Position the token at the specified location
         # The pos is the center position, but ellipse should be at base z
@@ -191,15 +187,11 @@ def create_insert(doc):
             )
 
         # Add to document for visualization
-        FreeCAD.Console.PrintMessage(
-            f"Adding oval token {i+1} to document as 'OvalToken_{i+1}'\n"
-        )
+        FreeCAD.Console.PrintMessage(f"Adding oval token {i+1} to document as 'OvalToken_{i+1}'\n")
         try:
             feature = doc.addObject("Part::Feature", f"OvalToken_{i+1}")
             if feature is None:
-                FreeCAD.Console.PrintError(
-                    f"doc.addObject returned None for OvalToken_{i+1}!\n"
-                )
+                FreeCAD.Console.PrintError(f"doc.addObject returned None for OvalToken_{i+1}!\n")
             else:
                 feature.Shape = oval_shape
                 FreeCAD.Console.PrintMessage(
@@ -252,13 +244,9 @@ def create_insert(doc):
         try:
             container = container.cut(cutout)
             if container.isNull():
-                FreeCAD.Console.PrintError(
-                    f"Cut operation {i} resulted in null shape!\n"
-                )
+                FreeCAD.Console.PrintError(f"Cut operation {i} resulted in null shape!\n")
                 raise ValueError(f"Cut operation {i} resulted in null shape")
-            FreeCAD.Console.PrintMessage(
-                f"Cut operation {i+1} completed successfully\n"
-            )
+            FreeCAD.Console.PrintMessage(f"Cut operation {i+1} completed successfully\n")
         except Exception as e:
             FreeCAD.Console.PrintError(f"Cut operation {i} failed: {e}\n")
             raise ValueError(f"Cut operation {i} failed: {e}")

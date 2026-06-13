@@ -22,4 +22,4 @@ bearing_diameter = 15
 
 fitting_diameter = outer_diameter + 6
 
-end_radius = end_diameter/2
+end_radius = end_diameter / 2

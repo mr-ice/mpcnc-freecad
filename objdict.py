@@ -1,6 +1,6 @@
 class objdict(dict):
     def __getattr__(self, name):
-        if not name in self:
+        if name not in self:
             self.name = objdict
         return self[name]
 

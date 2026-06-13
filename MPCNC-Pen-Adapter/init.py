@@ -1,10 +1,10 @@
-import sys
 import os
-os.chdir('/Users/michael/3dp/freeCAD')
-sys.path.insert(0,'.')
+import sys
+
+os.chdir("/Users/michael/3dp/freeCAD")
+sys.path.insert(0, ".")
 doc = App.newDocument("Unnamed")
-from endstops import MicroSwitchHousing, MicroSwitch
-#from PenHolderConfig import *  # configuration elements
+# from PenHolderConfig import *  # configuration elements
 
 # from tube import tube
 # for pasting into freecad that's not sufficient, and I've had to copy/paste the entire tube function in

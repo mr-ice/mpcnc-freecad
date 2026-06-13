@@ -7,13 +7,13 @@ thickness.
 import math
 
 thickness = 1  # mm
-a = thickness/2
+a = thickness / 2
 width = 8  # mm
 
 # isosceles right triangle
-# hb = sqrt( a**2 - (0.5 * b) **2 
+# hb = sqrt( a**2 - (0.5 * b) **2
 
 # The height is the value of the chamfer where the sides are 0.5mm and the base
-b =  math.sqrt(a**2 + a**2)  # (hypotenuse)
+b = math.sqrt(a**2 + a**2)  # (hypotenuse)
 
-print(math.sqrt(a**2 - (0.5 * b)**2))
+print(math.sqrt(a**2 - (0.5 * b) ** 2))

@@ -1,9 +1,10 @@
 """Create the Dim Sum Organizer insert that fits between baskets."""
 
+import math
+
+import config
 import FreeCAD
 import Part
-import config
-import math
 
 
 def create_base_cylinder():
@@ -53,8 +54,7 @@ def calculate_basket_positions():
     positions = []
 
     FreeCAD.Console.PrintMessage(
-        f"Basket center separation: {center_separation}mm, "
-        f"Circle radius: {basket_radius}mm\n"
+        f"Basket center separation: {center_separation}mm, " f"Circle radius: {basket_radius}mm\n"
     )
 
     for i in range(6):
@@ -261,9 +261,7 @@ def create_finger_access_cylinder(oval_positions):
     circle_y = circle_token_radius * math.sin(circle_angle)
 
     dist_from_circle = math.sqrt((mid_x - circle_x) ** 2 + (mid_y - circle_y) ** 2)
-    min_separation = (
-        config.CIRCLE_TOKEN_RADIUS + 10.0 + 2.0
-    )  # finger_radius + clearance
+    min_separation = config.CIRCLE_TOKEN_RADIUS + 10.0 + 2.0  # finger_radius + clearance
 
     if dist_from_circle < min_separation:
         # Move further away from center
@@ -282,9 +280,7 @@ def create_finger_access_cylinder(oval_positions):
     # Make it large enough for a finger to reach in
     # Extend all the way through the base
     finger_radius = 10.0  # mm - comfortable finger size
-    finger_height = (
-        config.BASKET_HEIGHT * 1.5
-    )  # Tall enough to extend through entire base
+    finger_height = config.BASKET_HEIGHT * 1.5  # Tall enough to extend through entire base
 
     finger_cylinder = Part.makeCylinder(
         finger_radius,
@@ -404,9 +400,7 @@ def create_basket_insert(doc):
         try:
             base = base.cut(basket_cyl)
             if base.isNull():
-                FreeCAD.Console.PrintError(
-                    f"Cut with basket {i+1} resulted in null shape!\n"
-                )
+                FreeCAD.Console.PrintError(f"Cut with basket {i+1} resulted in null shape!\n")
                 raise ValueError(f"Cut with basket {i+1} resulted in null shape")
             FreeCAD.Console.PrintMessage(
                 f"Successfully cut with basket {i+1}. Remaining volume: {base.Volume}\n"
@@ -430,9 +424,7 @@ def create_basket_insert(doc):
     try:
         base = base.cut(circle_token_cutout)
         if base.isNull():
-            FreeCAD.Console.PrintError(
-                "Cut with circle token resulted in null shape!\n"
-            )
+            FreeCAD.Console.PrintError("Cut with circle token resulted in null shape!\n")
             raise ValueError("Cut with circle token resulted in null shape")
         FreeCAD.Console.PrintMessage(
             f"Successfully cut with circle token. Remaining volume: {base.Volume}\n"
@@ -472,9 +464,7 @@ def create_basket_insert(doc):
         try:
             base = base.cut(oval_cutout)
             if base.isNull():
-                FreeCAD.Console.PrintError(
-                    f"Cut with oval token {i+1} resulted in null shape!\n"
-                )
+                FreeCAD.Console.PrintError(f"Cut with oval token {i+1} resulted in null shape!\n")
                 raise ValueError(f"Cut with oval token {i+1} resulted in null shape")
             FreeCAD.Console.PrintMessage(
                 f"Successfully cut with oval token {i+1}. Remaining volume: {base.Volume}\n"
@@ -498,9 +488,7 @@ def create_basket_insert(doc):
     try:
         base = base.cut(finger_cylinder)
         if base.isNull():
-            FreeCAD.Console.PrintError(
-                "Cut with finger access cylinder resulted in null shape!\n"
-            )
+            FreeCAD.Console.PrintError("Cut with finger access cylinder resulted in null shape!\n")
             raise ValueError("Cut with finger access cylinder resulted in null shape")
         FreeCAD.Console.PrintMessage(
             f"Successfully cut with finger access cylinder. Remaining volume: {base.Volume}\n"

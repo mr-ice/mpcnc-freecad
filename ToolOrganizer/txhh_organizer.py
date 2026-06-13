@@ -3,9 +3,9 @@ THXX drawer bin inserts - FreeCAD model generator.
 Creates organizer bins per TXHHPROJECT.md using configtxhh.
 """
 
+import configtxhh as cfg
 import FreeCAD
 import Part
-import configtxhh as cfg
 
 # Tolerance for geometric comparisons (mm)
 _TOL = 0.02
@@ -62,9 +62,7 @@ def _make_bowtie_hole_solid(
     except Exception:
         scale = 1.0 + tolerance_mm / min(length_mm, width_mm)
         wn = narrow_width_mm * scale
-        wire = _make_bowtie_wire(
-            length_mm * scale, width_mm * scale, wn, length_along_x
-        )
+        wire = _make_bowtie_wire(length_mm * scale, width_mm * scale, wn, length_along_x)
         offset_face = Part.Face(wire)
     return offset_face.extrude(FreeCAD.Vector(0, 0, height_mm))
 
@@ -225,12 +223,7 @@ def _cut_bowtie_holes(shape, bin_x, bin_y, width, depth, height, wall_mm):
     for gx, gy, length_along_x in _connector_grid_positions():
         lx = gx - bin_x
         ly = gy - bin_y
-        if (
-            lx + half_L < 0
-            or lx - half_L > width
-            or ly + half_W < 0
-            or ly - half_W > depth
-        ):
+        if lx + half_L < 0 or lx - half_L > width or ly + half_W < 0 or ly - half_W > depth:
             continue
         hole_at = _make_bowtie_hole_solid(L, W, Wn, wall_mm, tol, length_along_x)
         hole_at.translate(FreeCAD.Vector(lx, ly, 0))
@@ -256,9 +249,7 @@ def _fillet_bin(shape, width, depth, height, wall_mm, vert_radius, horiz_radius)
             result = shape
         else:
             result = shape.makeFillet(vert_r, vert_edges)
-        inside_top = _collect_inside_top_horiz_edges(
-            result, width, depth, height, wall_mm
-        )
+        inside_top = _collect_inside_top_horiz_edges(result, width, depth, height, wall_mm)
         if inside_top:
             result = result.makeFillet(horiz_r, inside_top)
         return result
