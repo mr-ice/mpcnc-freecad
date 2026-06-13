@@ -1,0 +1,35 @@
+# -*- coding: utf-8 -*-
+
+# Macro Begin: /Users/michael/3dp/WallHangers/loadkeyhole.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+
+import FreeCAD as App
+import os
+import sys
+from importlib import reload
+os.chdir('/Users/michael/3dp/WallHangers/')
+
+if '' not in sys.path:
+	sys.path.insert(0, '')
+
+try: 
+	App.closeDocument('mountkeyhole')
+except NameError:
+	pass
+	
+
+doc = FreeCAD.newDocument('mountkeyhole')
+if 'mountkeyhole' not in sys.modules:
+    import mountkeyhole
+
+reload(mountkeyhole)
+
+
+Gui.activeDocument().activeView().viewTop()
+#Gui.activeDocument().activeView().viewIsometric()
+Gui.SendMsgToActiveView("ViewFit")
+
+# Macro End: /Users/michael/project/pickleball/ScreenFrame.FCMacro +++++++++++++++++++++++++++++++++++++++++++++++++
+#Gui.Selection.clearSelection()
+#Gui.Selection.addSelection('ScreenFrame','Frame')
+#Gui.runCommand('Std_ToggleVisibility',0)
+#Gui.Selection.clearSelection()
