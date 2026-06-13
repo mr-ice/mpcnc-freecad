@@ -135,26 +135,32 @@ def _prism_xz(points_xz, y0, length):
     return face.extrude(Vector(0.0, length, 0.0))
 
 
-def _lid_xsection(clearance):
-    """Return the lid's X-Z cross-section, optionally grown outward by ``clearance``.
+def _lid_xsection(clearance, width_inflate=0.0):
+    """Return the lid's X-Z cross-section, optionally grown outward.
 
     This is the single source of truth for the lid profile. ``clearance == 0`` gives the
     lid itself; a positive ``clearance`` gives the tray slot section (the lid grown by the
     fit tolerance). The top sliding edges are chamfered by ``LID_BEVEL`` so the tray's
     retaining lip is a 45 deg, support-free overhang.
 
+    ``width_inflate`` grows the profile only in X (each rail edge outward by this amount),
+    leaving Z unchanged. The lid uses it to widen into the rail grooves for a tighter
+    friction fit; the slot does not, so the side clearance shrinks while the Z fit is kept.
+
     Parameters
     ----------
     clearance : float
         Amount to grow the section outward on every side (mm).
+    width_inflate : float, optional
+        Extra growth applied per side in X only (mm). Default ``0.0``.
 
     Returns
     -------
     list of tuple of float
         ``(x, z)`` profile vertices, ordered, ready for :func:`_prism_xz`.
     """
-    x0 = LID_X0 - clearance
-    x1 = LID_X1 + clearance
+    x0 = LID_X0 - clearance - width_inflate
+    x1 = LID_X1 + clearance + width_inflate
     zb = LID_Z0 - clearance
     zt = LID_Z1 + clearance
     b = cfg.LID_BEVEL
@@ -298,8 +304,12 @@ def build_tray():
 
 
 def _lid_prism(y0, y1):
-    """Return a flat lid plate (single-source section) spanning ``Y[y0..y1]``."""
-    return _prism_xz(_lid_xsection(0.0), y0, y1 - y0)
+    """Return a flat lid plate (single-source section) spanning ``Y[y0..y1]``.
+
+    The section is widened in X by half of ``LID_WIDTH_FRICTION`` per side (the slot is
+    not), tightening the rail-groove fit so the lid stays put while still sliding.
+    """
+    return _prism_xz(_lid_xsection(0.0, cfg.LID_WIDTH_FRICTION / 2.0), y0, y1 - y0)
 
 
 def build_large_lid():
@@ -454,16 +464,22 @@ def build_stand():
         The stand solid.
     """
     t, base_d = cfg.STAND_THICKNESS, cfg.STAND_BASE_DEPTH
+    g = cfg.STAND_BODY_GAP
     yf, zf = STAND_FOLDED
 
-    left_leg = _leg(-t)
-    right_leg = _leg(OUTER_WIDTH)
-    # Base panel: a little wider than the box front so it covers both legs.
-    base = _box(-t, -base_d, 0.0, OUTER_WIDTH + 2 * t, base_d, WALL_TOP)
-    gussets = _leg_base_gussets(-t).fuse(_leg_base_gussets(OUTER_WIDTH))
-    # Pegs project inward from each leg into the wall slot.
-    left_peg = _oval_peg(yf, zf, 0.0, cfg.STAND_PEG_DEPTH)
-    right_peg = _oval_peg(yf, zf, OUTER_WIDTH - cfg.STAND_PEG_DEPTH, cfg.STAND_PEG_DEPTH)
+    # Each leg is offset outward by the body gap so its inner face does not touch (and
+    # print fused to) the tray's outer wall. Inner faces land at x = -g and x = OUTER_WIDTH+g.
+    left_leg_x0 = -t - g
+    right_leg_x0 = OUTER_WIDTH + g
+    left_leg = _leg(left_leg_x0)
+    right_leg = _leg(right_leg_x0)
+    # Base panel: a little wider than the box front so it covers both (gapped) legs.
+    base = _box(left_leg_x0, -base_d, 0.0, (right_leg_x0 + t) - left_leg_x0, base_d, WALL_TOP)
+    gussets = _leg_base_gussets(left_leg_x0).fuse(_leg_base_gussets(right_leg_x0))
+    # Pegs project inward from each leg, bridging the gap and reaching STAND_PEG_DEPTH into
+    # the wall slot (which is cut from the wall outer face at x = 0 / x = OUTER_WIDTH).
+    left_peg = _oval_peg(yf, zf, -g, cfg.STAND_PEG_DEPTH + g)
+    right_peg = _oval_peg(yf, zf, OUTER_WIDTH - cfg.STAND_PEG_DEPTH, cfg.STAND_PEG_DEPTH + g)
 
     return left_leg.fuse(right_leg).fuse(base).fuse(gussets).fuse(left_peg).fuse(right_peg)
 

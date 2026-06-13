@@ -44,6 +44,10 @@ RAIL_DEPTH = 1.5  # how far the lid edge sits into the side rail groove
 # is then LID_THICKNESS - LID_BEVEL thick (~0.5 mm) -- raise LID_THICKNESS if too fragile.
 LID_BEVEL = RAIL_DEPTH  # 45 deg chamfer on the lid's top sliding edges (== groove depth)
 LID_SLIDE_CLEARANCE = 0.3  # tolerance grown around the lid to cut the tray slot (the fit)
+# Extra lid width (total across both rail edges; half is added per side) that grows ONLY the
+# lid, not the slot, so the side clearance shrinks from LID_SLIDE_CLEARANCE to a tighter
+# friction fit. Raised because the lid slid well but did not stay put.
+LID_WIDTH_FRICTION = 0.4
 LID_TOP_LIP = 1.0  # wall lip above the lid that retains it from lifting
 
 # End walls (front and back) are identical: both rise to the lid underside (full pocket
@@ -72,6 +76,9 @@ STAND_PEG_LENGTH = 10.0  # oval major axis, along the leg
 STAND_PEG_WIDTH = 5.0  # oval minor axis (sets the slot channel width)
 STAND_PEG_DEPTH = 2.5  # how far the peg projects into the wall slot (< WALL_LONG)
 STAND_SLOT_CLEARANCE = 0.4  # slot-vs-peg running clearance
+# Gap between each leg's inner face and the tray outer wall, so the folded-modelled stand
+# does not print fused to the tray body. The peg still bridges this gap into the wall slot.
+STAND_BODY_GAP = 0.2
 
 # Slot path in the outer wall face, DERIVED from the leg so the oval sits at the back of
 # the leg with equal margins. The hinge is toward the FRONT. Path: along the horizontal
