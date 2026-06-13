@@ -42,42 +42,57 @@ def create_grommet(diameter, depth, rim_width, thickness, friction_embed_percent
     # Adjust so 50% means center is at outer edge (radius)
     cylinder_center_radius = radius + (thickness/2) - embed_distance
     
-    # Create four cylinders at 90-degree intervals
-    for i, angle in enumerate([0, 90, 180, 270]):
-        # Calculate position for this cylinder
-        angle_rad = angle * pi / 180
-        x = cylinder_center_radius * cos(angle_rad)
-        y = cylinder_center_radius * sin(angle_rad)
-        
-        # Create the tapered cylinder (cone)
-        pos = App.Vector(x, y, thickness/2)
-        dir = App.Vector(0, 0, 1)
-        cylinder = Part.makeCone(cylinder_radius, top_radius, cylinder_height, pos, dir)
-        
-        # Create fillet at the top
-        edges_to_fillet = []
-        for edge in cylinder.Edges:
-            if abs(edge.CenterOfMass.z - (cylinder_height + thickness/2)) < 0.1:  # Top edge
-                edges_to_fillet.append(edge)
-        
-        # Apply fillet
-        cylinder = cylinder.makeFillet(top_radius/2, edges_to_fillet)
-        
-        # Temporarily add cylinder to document for visualization
-        # doc = App.activeDocument()
-        # temp_cyl = doc.addObject("Part::Feature", f"TempFrictionCylinder_{i+1}")
-        # temp_cyl.Shape = cylinder
-        # doc.recompute()
-        
-        friction_cylinders.append(cylinder)
+    # # Create four cylinders at 90-degree intervals
+    # for i, angle in enumerate([0, 90, 180, 270]):
+    #     # Calculate position for this cylinder
+    #     angle_rad = angle * pi / 180
+    #     x = cylinder_center_radius * cos(angle_rad)
+    #     y = cylinder_center_radius * sin(angle_rad)
+    #     
+    #     # Create the tapered cylinder (cone)
+    #     pos = App.Vector(x, y, thickness/2)
+    #     dir = App.Vector(0, 0, 1)
+    #     cylinder = Part.makeCone(cylinder_radius, top_radius, cylinder_height, pos, dir)
+    #     
+    #     # Create fillet at the top
+    #     edges_to_fillet = []
+    #     for edge in cylinder.Edges:
+    #         if abs(edge.CenterOfMass.z - (cylinder_height + thickness/2)) < 0.1:  # Top edge
+    #             edges_to_fillet.append(edge)
+    #     
+    #     # Apply fillet
+    #     cylinder = cylinder.makeFillet(top_radius/2, edges_to_fillet)
+    #     
+    #     friction_cylinders.append(cylinder)
+    # 
+    # # Fuse all friction cylinders together
+    # combined_cylinders = friction_cylinders[0]
+    # for cyl in friction_cylinders[1:]:
+    #     combined_cylinders = combined_cylinders.fuse(cyl)
+    # 
+    # # Fuse friction cylinders with the main body
+    # body = body.fuse(combined_cylinders)
     
-    # Fuse all friction cylinders together
-    combined_cylinders = friction_cylinders[0]
-    for cyl in friction_cylinders[1:]:
-        combined_cylinders = combined_cylinders.fuse(cyl)
+    # Create threading
+    thread_pitch = 4.0  # Distance between threads (larger for thicker threads)
+    thread_depth = thickness * 0.8  # Deep threads
+    thread_width = thread_pitch * 0.6  # Width of thread
+    num_segments = 36  # Number of segments per revolution
     
-    # Fuse friction cylinders with the main body
-    body = body.fuse(combined_cylinders)
+    # Create the thread by making a series of helical cuts
+    for i in range(int((depth-thread_pitch) / (thread_pitch/num_segments))):
+        angle = (i * 360 / num_segments) % 360
+        z_pos = (i * thread_pitch / num_segments)
+        
+        # Create a box for each thread segment
+        thread_box = Part.makeBox(thread_depth, thread_width, thread_pitch/2)
+        
+        # Position and rotate the box
+        thread_box.translate(App.Vector(radius-thread_depth, -thread_width/2, z_pos))
+        thread_box.rotate(App.Vector(radius, 0, z_pos), App.Vector(0,0,1), angle)
+        
+        # Cut the thread into the body
+        body = body.cut(thread_box)
     
     # Create the rim
     outer_rim_radius = radius + rim_width
@@ -184,8 +199,44 @@ def create_grommet(diameter, depth, rim_width, thickness, friction_embed_percent
     
     return grommet
 
+def create_matching_nut(diameter, depth, thickness, thread_pitch=4.0):
+    """Create a matching nut for the threaded grommet"""
+    
+    # Nut dimensions
+    nut_height = depth * 0.4  # Make nut shorter than grommet
+    nut_outer_dia = diameter * 1.8  # Make nut substantially larger
+    nut_inner_dia = diameter - thickness * 0.2  # Slightly smaller for good fit
+    thread_depth = thickness * 0.8
+    thread_width = thread_pitch * 0.6
+    num_segments = 36
+    
+    # Create basic hexagonal nut
+    hex_nut = Part.makeCylinder(nut_outer_dia/2, nut_height)
+    hex_nut = hex_nut.makeHexa()
+    
+    # Create central hole
+    hole = Part.makeCylinder(nut_inner_dia/2, nut_height)
+    hex_nut = hex_nut.cut(hole)
+    
+    # Create internal threads
+    for i in range(int((nut_height-thread_pitch) / (thread_pitch/num_segments))):
+        angle = (i * 360 / num_segments) % 360
+        z_pos = (i * thread_pitch / num_segments)
+        
+        # Create thread segment
+        thread_box = Part.makeBox(thread_depth, thread_width, thread_pitch/2)
+        
+        # Position and rotate
+        thread_box.translate(App.Vector(nut_inner_dia/2, -thread_width/2, z_pos))
+        thread_box.rotate(App.Vector(nut_inner_dia/2, 0, z_pos), App.Vector(0,0,1), angle)
+        
+        # Add thread to nut
+        hex_nut = hex_nut.fuse(thread_box)
+    
+    return hex_nut
+
 def main():
-    # Example usage with dimensions in inches
+    # Example usage
     diameter = 55  # mm
     depth = 30    # mm
     rim_width = 12  # mm
@@ -194,7 +245,16 @@ def main():
     
     result = create_grommet(diameter, depth, rim_width, thickness, 
                           friction_embed_percent=50, cut_width=cut_width,
-                          taper_percent=80)  # 10% taper
+                          taper_percent=80)
+    
+    # Create matching nut
+    nut = create_matching_nut(diameter, depth, thickness)
+    
+    # Add nut to document
+    doc = App.activeDocument()
+    nut_obj = doc.addObject("Part::Feature", "Matching_Nut")
+    nut_obj.Shape = nut
+    nut_obj.Placement.Base = App.Vector(diameter*1.5, 0, 0)  # Place nut beside grommet
     
     # If cut_width was provided, result is a tuple of (part1, part2)
     if isinstance(result, tuple):
