@@ -1,0 +1,21 @@
+App.closeDocument('Experiment1')
+doc = App.newDocument('Experiment1')
+wedge = doc.addObject("Part::Wedge", "myWedge")
+wedge.Xmin = 0
+wedge.Ymin = 0
+wedge.Zmin = 0
+wedge.Xmax = 320
+wedge.Zmax = 320
+wedge.Ymax = 77
+wedge.X2min = 2.5
+wedge.Z2min = 2.5
+wedge.X2max = 315 + 2.5
+wedge.Z2max = 315 + 2.5
+wedge.Placement = App.Placement(App.Vector(0,0,0), App.Rotation(90,0,90))
+
+origin_sphere = doc.addObject("Part::Sphere", "origin_sphere")
+sphere = Part.makeSphere(10)
+origin_sphere.Shape = sphere
+origin_sphere.Placement = App.Placement(App.Vector(0,0,0), App.Rotation(0,0,0))
+
+doc.recompute()
